@@ -16,21 +16,21 @@
 
 #include "dispatch.h"
 
-int dispatch_input(int *dst_socket)
+int dispatch_input(int *dst_socket, int max_fd)
 {
   char recv_buf[RECV_MAX];
-  int recv_bytes, send_bytes;
+  int i, recv_bytes, send_bytes;
 
-  memset(recv_buf, 0, sizeof(recv_buf));
+  printf("%d\n",max_fd);
+  memset(recv_buf, 0, RECV_MAX);
   recv_bytes = recv(*dst_socket, recv_buf, sizeof(recv_buf), 0);
-  if(strncmp(recv_buf, "hola", strlen("hola")) == 0)
+  for (i = 4; i <= max_fd; i++)
   {
-    const char *message = "Has respondido hola!\n";
-    send_bytes = send(*dst_socket, message, strlen(message), 0);
-  } else
-  {
-    const char *message = "Input not found.\n";
-    send_bytes = send(*dst_socket, message, strlen(message), 0);
+    send_bytes = send(i, recv_buf, sizeof(recv_buf), 0);
+    if(send_bytes <= 0)
+    {
+      perror("send() failed");
+    }
   }
   return recv_bytes;
 }

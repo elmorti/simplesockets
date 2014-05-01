@@ -19,6 +19,6 @@
 #ifndef DISPATCH_H
 #define DISPATCH_H
 
-int dispatch_input(int *);
+int dispatch_input(int *, int);
 
 #endif /* dispatch.h */

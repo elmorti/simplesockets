@@ -9,19 +9,41 @@
 #include <errno.h>
 #include <signal.h>
 #include <netdb.h>
+#include <fcntl.h>
 
 #define SEND_MAX  1024
 
 void start_talking(int *client_socket)
 {
+  /* Initialize the tx/rx buffers */
   char send_buf[SEND_MAX];
   char recv_buf[SEND_MAX];
   memset(recv_buf, 0, SEND_MAX);
-  printf("Enter a command: ");
+  memset(send_buf, 0, SEND_MAX);
+
+  int bytes;
+
+  /* Setup input prompt */
+  printf("FancyChat# ");
+
   fgets(send_buf, SEND_MAX-1, stdin);
-  send(*client_socket, send_buf, strlen(send_buf), 0);
-  recv(*client_socket, recv_buf, sizeof(recv_buf), 0);
-  printf("Server replied %s",recv_buf);
+  bytes = send(*client_socket, send_buf, strlen(send_buf), 0);
+  if(bytes > 0)
+  {
+    printf("[Message sent successfully!]\n");
+  } else
+  {
+    perror("send() failed");
+  }
+
+  bytes = recv(*client_socket, recv_buf, sizeof(recv_buf), 0);
+  if(bytes > 0)
+  {
+    printf(">>> %s\n",recv_buf);
+  } else
+  {
+    perror("recv() failed");
+  }
 }
 
 int main()
@@ -52,7 +74,6 @@ int main()
   while (1)
   {
     start_talking(&client_socket);
-    /* TODO(spartida): Catch CTRL-C signal to close socket and exit program. */
   }
 
   close(client_socket);
