@@ -1,3 +1,8 @@
+/*
+ * Author: samuel.partida@gmail.com (Samuel Partida) 2014
+ * Based on many Unix C Sockets books and literature on the webz.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,6 +19,6 @@
 #ifndef DISPATCH_H
 #define DISPATCH_H
 
-void dispatch_input(int *);
+int dispatch_input(int *);
 
 #endif /* dispatch.h */

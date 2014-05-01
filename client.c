@@ -21,7 +21,7 @@ void start_talking(int *client_socket)
   fgets(send_buf, SEND_MAX-1, stdin);
   send(*client_socket, send_buf, strlen(send_buf), 0);
   recv(*client_socket, recv_buf, sizeof(recv_buf), 0);
-  printf("Server replied \"%s\"",recv_buf);
+  printf("Server replied %s",recv_buf);
 }
 
 int main()
@@ -34,15 +34,18 @@ int main()
   server = gethostbyname("localhost");
   memset(&srv_sockaddr, 0, sizeof(struct sockaddr_in));
   srv_sockaddr.sin_family = AF_INET;
-  memcpy((char *)server->h_addr, (char *)&srv_sockaddr.sin_addr.s_addr, server->h_length);
+  memcpy((char *)server->h_addr,
+         (char *)&srv_sockaddr.sin_addr.s_addr,
+         server->h_length);
   srv_sockaddr.sin_port = htons(5432);
 
   client_socket = socket(AF_INET, SOCK_STREAM, 0);
 
-  if (connect(client_socket, (struct sockaddr *)&srv_sockaddr, sizeof(srv_sockaddr)) == -1)
+  if (connect(client_socket,
+              (struct sockaddr *)&srv_sockaddr,
+              sizeof(srv_sockaddr)) == -1)
   {
-    /* TODO(spartida): Better use of perror() */
-    perror("Connect error.\n");
+    perror("connect() failed");
     exit(1);
   }
 

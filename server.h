@@ -1,3 +1,8 @@
+/*
+ * Author: samuel.partida@gmail.com (Samuel Partida) 2014
+ * Based on many Unix C Sockets books and literature on the webz.
+ */
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <arpa/inet.h>
@@ -13,18 +18,18 @@
 #define DEFAULT_PORT  5432
 #define MAX_CONN      10
 
-/* Server address info */
-struct sockaddr_in srv_sockaddr;
+fd_set read_fd_set;   /* Sockets ready for read() */
+fd_set active_fd_set; /* Sockets active */
 
-/* Client address info */
-struct sockaddr_in dst_sockaddr;
+struct sockaddr_in srv_sockaddr;  /* Server address info */
+struct sockaddr_in dst_sockaddr;  /* Client address info */
 
-/* Address length */
-socklen_t addr_size;
+socklen_t dst_addrsize;  /* Client Address length */
 
-/* Server listening socket */
-int srv_socket;
+int srv_socket; /* Server listening socket */
+int dst_socket; /* Client socket */
 
+/* Function declarations */
 void setup_server(struct sockaddr_in*, int*);
 void start_server(struct sockaddr_in*, int*);
 

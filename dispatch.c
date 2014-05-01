@@ -1,3 +1,8 @@
+/*
+ * Author: samuel.partida@gmail.com (Samuel Partida) 2014
+ * Based on many Unix C Sockets books and literature on the webz.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,18 +16,20 @@
 
 #include "dispatch.h"
 
-void dispatch_input(int *dst_socket)
+int dispatch_input(int *dst_socket)
 {
   char recv_buf[RECV_MAX];
   int recv_bytes, send_bytes;
 
   memset(recv_buf, 0, sizeof(recv_buf));
   recv_bytes = recv(*dst_socket, recv_buf, sizeof(recv_buf), 0);
-  printf("Received %d bytes.\n",strlen(recv_buf));
-  if (recv_bytes == 0)
+  if(recv_bytes == -1)
   {
-    printf("Connection reset by peer.\n");
+    perror("recv() failed");
+    return recv_bytes;
   }
+
+  /* If I am receiving bytes, get them */
   while (recv_bytes > 0)
   {
     if(strncmp(recv_buf, "hola", strlen("hola")) == 0)
@@ -35,6 +42,6 @@ void dispatch_input(int *dst_socket)
       send_bytes = send(*dst_socket, message, strlen(message), 0);
     }
     recv_bytes = recv(*dst_socket, recv_buf, sizeof(recv_buf), 0);
-    printf("Received %d bytes.\n",strlen(recv_buf));
   }
+  return recv_bytes;
 }
