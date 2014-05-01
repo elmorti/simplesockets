@@ -23,25 +23,14 @@ int dispatch_input(int *dst_socket)
 
   memset(recv_buf, 0, sizeof(recv_buf));
   recv_bytes = recv(*dst_socket, recv_buf, sizeof(recv_buf), 0);
-  if(recv_bytes == -1)
+  if(strncmp(recv_buf, "hola", strlen("hola")) == 0)
   {
-    perror("recv() failed");
-    return recv_bytes;
-  }
-
-  /* If I am receiving bytes, get them */
-  while (recv_bytes > 0)
+    const char *message = "Has respondido hola!\n";
+    send_bytes = send(*dst_socket, message, strlen(message), 0);
+  } else
   {
-    if(strncmp(recv_buf, "hola", strlen("hola")) == 0)
-    {
-      const char *message = "Has respondido hola!\n";
-      send_bytes = send(*dst_socket, message, strlen(message), 0);
-    } else
-    {
-      const char *message = "Input not found.\n";
-      send_bytes = send(*dst_socket, message, strlen(message), 0);
-    }
-    recv_bytes = recv(*dst_socket, recv_buf, sizeof(recv_buf), 0);
+    const char *message = "Input not found.\n";
+    send_bytes = send(*dst_socket, message, strlen(message), 0);
   }
   return recv_bytes;
 }

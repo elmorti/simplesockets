@@ -7,4 +7,4 @@ server:
 	gcc server.c dispatch.c -o server
 
 clean:
-	rm server client *.o
+	rm server client

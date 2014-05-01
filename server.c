@@ -148,11 +148,13 @@ int main()
 
         /* We process the data and close the socket and clear it */
         printf("Dispatching active connection %d.\n",i);
-        if(dispatch_input(&i) <= 0)
+        int n = dispatch_input(&i);
+        if(n <= 0)
         {
           FD_CLR(i, &active_fd_set);
           close(i);
         }
+        printf("Received %d bytes.\n",n);
       } 
     }
   }
