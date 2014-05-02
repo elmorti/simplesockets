@@ -4,7 +4,7 @@ client:
 	gcc client.c -o client
 
 server:
-	gcc server.c dispatch.c -o server
+	gcc main.c server.c dispatcher.c main.c -o server
 
 clean:
 	rm server client
