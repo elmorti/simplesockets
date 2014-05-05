@@ -15,35 +15,61 @@
 
 #include "dispatcher.h"
 
-int handle_connection(int dst_socket)
+int handle_readfd(char *buf, int readfd)
 {
-  char buf_in[BUF_SIZE];
-  char buf_out[BUF_SIZE];
-  memset(buf_in, 0, sizeof(buf_in));
-  memset(buf_out, 0, sizeof(buf_in));
-  int buf_written, buf_read, buf_available = 0;
+  buf = (char *) malloc(BUF_SIZE * sizeof(char));
+  memset(&buf, 0, sizeof(buf));
+  int buf_read, buf_available = 0;
 
-  /* Read */
-  buf_read = recv(dst_socket, &buf_in, sizeof(buf_in), 0);
+  /* TODO(spartida): Implement read_all */
+  buf_read = recv(readfd, &buf, sizeof(buf), 0);
+  if (buf_read < 0)
+  {
+    if(errno == EWOULDBLOCK)
+    {
+      printf("(Socked %d): Got EWOULDBLOCK.\n",readfd);
+    }
+    perror("recv() failed");
+  }
   buf_available = BUF_SIZE - buf_read;
-  parse_input(buf_in, buf_out);
-
-  /* Write */
-  buf_available = 0;
-  buf_written = send(dst_socket, &buf_out, sizeof(buf_out), 0);
-  buf_available = BUF_SIZE - buf_written;
-  return buf_available;
+  printf("(Socket %d): Read %d bytes, buffer available %d bytes.\n",
+         readfd,
+         buf_read,
+         buf_available);
+  return buf_read;
 }
 
-void parse_input(char *in_msg, char *out_msg)
+int handle_writefd(char *message,
+                   int srv_socket,
+                   int max_fd,
+                   fd_set *active_fd_set)
 {
-  const char *message1 = "Message understood!\n";
-  const char *message2 = "Message empty!\n";
-  if(strncmp(in_msg, "hola", strlen("hola")) == 0)
+  char buf[BUF_SIZE];
+  memset(buf, 0, sizeof(buf));
+  int i, buf_written, buf_available = 0;
+
+
+  /* TODO(spartida): Implement send_all */
+  for (i = 0; i<=max_fd; i++)
   {
-    strncpy(out_msg, message1, strlen(message1));
-  } else
-  {
-    strncpy(out_msg, message2, strlen(message2));
+    if(i == srv_socket)
+    {
+      continue;
+    }
+    if(FD_ISSET(i, active_fd_set))
+    {
+      sprintf(buf, "(Socket %d): %s\n", i, message);
+      buf_written = send(i, &buf, sizeof(buf), 0);
+      if (buf_written < 0)
+      {
+        perror("send() failed");
+        return -1;
+      }
+      buf_available = BUF_SIZE - buf_written;
+      printf("Written %d bytes, buffer available %d bytes.\n",
+             buf_written,
+             buf_available);
+    }
   }
+  return buf_written;
 }

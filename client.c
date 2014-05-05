@@ -13,7 +13,7 @@
 
 #define SEND_MAX  1024
 
-void start_talking(int *client_socket)
+void start_talking(int client_socket)
 {
   /* Initialize the tx/rx buffers */
   char send_buf[SEND_MAX];
@@ -27,7 +27,7 @@ void start_talking(int *client_socket)
   printf("FancyChat# ");
 
   fgets(send_buf, SEND_MAX-1, stdin);
-  bytes = send(*client_socket, send_buf, strlen(send_buf), 0);
+  bytes = send(client_socket, send_buf, strlen(send_buf), 0);
   if(bytes > 0)
   {
     printf("[Message sent successfully!]\n");
@@ -36,7 +36,7 @@ void start_talking(int *client_socket)
     perror("send() failed");
   }
 
-  bytes = recv(*client_socket, recv_buf, sizeof(recv_buf), 0);
+  bytes = recv(client_socket, recv_buf, sizeof(recv_buf), 0);
   if(bytes > 0)
   {
     printf(">>> %s\n",recv_buf);
@@ -73,7 +73,7 @@ int main()
 
   while (1)
   {
-    start_talking(&client_socket);
+    start_talking(client_socket);
   }
 
   close(client_socket);

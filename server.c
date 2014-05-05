@@ -107,8 +107,9 @@ int run_server(int srv_socket)
 
   while(1)
   {
-    FD_ZERO(&read_fd_set);
+    /* Copy over descriptors of interest */
     memcpy(&read_fd_set, &active_fd_set, sizeof(active_fd_set));
+
     act = select(max_fd + 1, &read_fd_set, NULL, NULL, NULL);
     
     if(act < 0)
@@ -117,6 +118,7 @@ int run_server(int srv_socket)
       return -1;
     }
 
+    /* Readfds */
     for (i = 0; i <= max_fd; i++)
     {
       if(FD_ISSET(i, &read_fd_set))
@@ -142,8 +144,13 @@ int run_server(int srv_socket)
 
         } else
         {
+          /* TODO(spartida): Rewrite conditionals better. */
+          char message[BUF_SIZE];
           dst_socket = i;
-          if(handle_connection(dst_socket) == 0)
+          int n = handle_readfd(message, dst_socket);
+          printf("(Socket %d): Received %d bytes.\n",dst_socket,n);
+          handle_writefd(message, srv_socket, max_fd, &active_fd_set);
+          if(n == 0)
           {
             printf("(Socket %d): Connection closed.\n", dst_socket);
             shutdown_socket(dst_socket, &active_fd_set);
@@ -167,8 +174,8 @@ int shutdown_socket(int dst_socket, fd_set *active_fd_set)
   if(FD_ISSET(dst_socket, active_fd_set))
   {
     FD_CLR(dst_socket, active_fd_set);
-    close(dst_socket);
   }
+  close(dst_socket);
   printf("(Socket %d): Successfully closed client socket.\n", dst_socket);
   return 0;
 }
@@ -176,6 +183,8 @@ int shutdown_socket(int dst_socket, fd_set *active_fd_set)
 /*
  * Properly checks for active connections and shuts them down
  * closing the server at the end.
+ *
+ * TODO(spartida): Not sure how to use this yet
  */
 int shutdown_server(int srv_socket, int max_fd, fd_set *active_fd_set)
 {
