@@ -10,6 +10,6 @@
 #ifndef DISPATCHER_H
 #define DISPATCHER_H
 
-int handle_readfd(char *, int);
+int handle_readfd(char **, int);
 int handle_writefd(char *, int, int, fd_set*);
 #endif /* dispatcher.h */

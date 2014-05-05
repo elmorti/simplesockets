@@ -15,15 +15,14 @@
 
 #include "dispatcher.h"
 
-int handle_readfd(char *buf, int readfd)
+int handle_readfd(char **message, int readfd)
 {
-  buf = (char *) malloc(BUF_SIZE * sizeof(char));
-  memset(&buf, 0, sizeof(buf));
-  int buf_read, buf_available = 0;
+  *message = (char *) malloc(BUF_SIZE * sizeof(char));
+  memset(*message, 0, BUF_SIZE);
+  int bytes, available = 0;
 
-  /* TODO(spartida): Implement read_all */
-  buf_read = recv(readfd, &buf, sizeof(buf), 0);
-  if (buf_read < 0)
+  bytes = recv(readfd, *message, BUF_SIZE, 0);
+  if (bytes < 0)
   {
     if(errno == EWOULDBLOCK)
     {
@@ -31,12 +30,13 @@ int handle_readfd(char *buf, int readfd)
     }
     perror("recv() failed");
   }
-  buf_available = BUF_SIZE - buf_read;
+  available = BUF_SIZE - bytes; 
+  printf(">>> %s\n",*message);
   printf("(Socket %d): Read %d bytes, buffer available %d bytes.\n",
          readfd,
-         buf_read,
-         buf_available);
-  return buf_read;
+         bytes,
+         available);
+  return bytes;
 }
 
 int handle_writefd(char *message,

@@ -145,9 +145,9 @@ int run_server(int srv_socket)
         } else
         {
           /* TODO(spartida): Rewrite conditionals better. */
-          char message[BUF_SIZE];
           dst_socket = i;
-          int n = handle_readfd(message, dst_socket);
+          char *message = NULL;
+          int n = handle_readfd(&message, dst_socket);
           printf("(Socket %d): Received %d bytes.\n",dst_socket,n);
           handle_writefd(message, srv_socket, max_fd, &active_fd_set);
           if(n == 0)
