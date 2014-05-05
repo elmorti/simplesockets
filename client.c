@@ -11,35 +11,32 @@
 #include <netdb.h>
 #include <fcntl.h>
 
-#define SEND_MAX  1024
+#define BUF_SIZE 1024
 
-void start_talking(int client_socket)
+void send_message(int client_socket)
 {
-  /* Initialize the tx/rx buffers */
-  char send_buf[SEND_MAX];
-  char recv_buf[SEND_MAX];
-  memset(recv_buf, 0, SEND_MAX);
-  memset(send_buf, 0, SEND_MAX);
-
+  char send_buf[BUF_SIZE];
+  memset(send_buf, 0, BUF_SIZE);
   int bytes;
 
-  /* Setup input prompt */
-  printf("FancyChat# ");
-
-  fgets(send_buf, SEND_MAX-1, stdin);
-  bytes = send(client_socket, send_buf, strlen(send_buf), 0);
-  if(bytes > 0)
-  {
-    printf("[Message sent successfully!]\n");
-  } else
+  fgets(send_buf, BUF_SIZE-1, stdin);
+  bytes = send(client_socket, send_buf, BUF_SIZE, 0);
+  if(bytes < 0)
   {
     perror("send() failed");
   }
+}
 
-  bytes = recv(client_socket, recv_buf, sizeof(recv_buf), 0);
+void read_message(int client_socket)
+{
+  char recv_buf[BUF_SIZE];
+  memset(recv_buf, 0, BUF_SIZE);
+  int bytes;
+
+  bytes = recv(client_socket, recv_buf, BUF_SIZE, 0);
   if(bytes > 0)
   {
-    printf(">>> %s\n",recv_buf);
+    printf("%s\n",recv_buf);
   } else
   {
     perror("recv() failed");
@@ -48,10 +45,10 @@ void start_talking(int client_socket)
 
 int main()
 {
-
   struct sockaddr_in srv_sockaddr;
   struct hostent *server;
-  int client_socket;
+  int act, max_fd, client_socket;
+  fd_set write_fd_set, read_fd_set, master;
 
   server = gethostbyname("localhost");
   memset(&srv_sockaddr, 0, sizeof(struct sockaddr_in));
@@ -70,10 +67,37 @@ int main()
     perror("connect() failed");
     exit(1);
   }
+  FD_ZERO(&read_fd_set);
+  FD_ZERO(&write_fd_set);
+  FD_ZERO(&master);
+  FD_SET(client_socket, &master);
+  max_fd = client_socket;
 
   while (1)
   {
-    start_talking(client_socket);
+    read_fd_set = master;
+    write_fd_set = master;
+    act = select(max_fd + 1, &read_fd_set, &write_fd_set, NULL, NULL);
+    if (act < 0)
+    {
+      perror("select() failed");
+      exit(1);
+    } else
+    {
+      printf("Select for %d sockets\n", act);
+    }
+
+    if(FD_ISSET(client_socket, &read_fd_set))
+    {
+      printf("Read.\n");
+      read_message(client_socket);
+    }
+
+    else if(FD_ISSET(client_socket, &write_fd_set))
+    {
+      printf("Write.\n");
+      send_message(client_socket);
+    };
   }
 
   close(client_socket);
