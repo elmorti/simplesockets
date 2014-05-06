@@ -20,6 +20,7 @@ void send_message(int client_socket)
   int bytes;
 
   fgets(send_buf, BUF_SIZE-1, stdin);
+  fflush(0);
   bytes = send(client_socket, send_buf, BUF_SIZE, 0);
   if(bytes < 0)
   {
@@ -36,9 +37,16 @@ void read_message(int client_socket)
   bytes = recv(client_socket, recv_buf, BUF_SIZE, 0);
   if(bytes > 0)
   {
-    printf("%s\n",recv_buf);
+    printf("%s",recv_buf);
   } else
   {
+    /* TODO(spartida): Handle this better. */
+    if(bytes == 0)
+    {
+      printf("Remote server closed connection.\n");
+      close(client_socket);
+      exit(1);
+    }
     perror("recv() failed");
   }
 }
@@ -67,39 +75,37 @@ int main()
     perror("connect() failed");
     exit(1);
   }
+  printf("------ Welcome to FancyChat multiuser SIN HILOS CHACHO!!! ------\n");
   FD_ZERO(&read_fd_set);
   FD_ZERO(&write_fd_set);
   FD_ZERO(&master);
   FD_SET(client_socket, &master);
+  FD_SET(0, &master);
   max_fd = client_socket;
 
   while (1)
   {
     read_fd_set = master;
     write_fd_set = master;
-    act = select(max_fd + 1, &read_fd_set, &write_fd_set, NULL, NULL);
+    act = select(max_fd + 1, &read_fd_set, NULL, NULL, NULL);
     if (act < 0)
     {
       perror("select() failed");
       exit(1);
-    } else
-    {
-      printf("Select for %d sockets\n", act);
     }
 
     if(FD_ISSET(client_socket, &read_fd_set))
     {
-      printf("Read.\n");
       read_message(client_socket);
     }
 
-    else if(FD_ISSET(client_socket, &write_fd_set))
+    else if(FD_ISSET(0, &read_fd_set))
     {
-      printf("Write.\n");
       send_message(client_socket);
     };
   }
 
   close(client_socket);
+
   return 0;
 }

@@ -148,8 +148,11 @@ int run_server(int srv_socket)
           dst_socket = i;
           char *message = NULL;
           int n = handle_readfd(&message, dst_socket);
-          printf("(Socket %d): Received %d bytes.\n",dst_socket,n);
-          handle_writefd(message, srv_socket, max_fd, &active_fd_set);
+          handle_writefd(message,
+                         dst_socket,
+                         srv_socket,
+                         max_fd,
+                         &active_fd_set);
           if(n == 0)
           {
             printf("(Socket %d): Connection closed.\n", dst_socket);

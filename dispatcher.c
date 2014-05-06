@@ -31,7 +31,6 @@ int handle_readfd(char **message, int readfd)
     perror("recv() failed");
   }
   available = BUF_SIZE - bytes; 
-  printf(">>> %s\n",*message);
   printf("(Socket %d): Read %d bytes, buffer available %d bytes.\n",
          readfd,
          bytes,
@@ -40,6 +39,7 @@ int handle_readfd(char **message, int readfd)
 }
 
 int handle_writefd(char *message,
+                   int sender_socket,
                    int srv_socket,
                    int max_fd,
                    fd_set *active_fd_set)
@@ -58,7 +58,7 @@ int handle_writefd(char *message,
     }
     if(FD_ISSET(i, active_fd_set))
     {
-      sprintf(buf, "(Socket %d): %s\n", i, message);
+      sprintf(buf, "[Remote socket %d says]: %s", sender_socket, message);
       buf_written = send(i, &buf, sizeof(buf), 0);
       if (buf_written < 0)
       {
@@ -66,7 +66,8 @@ int handle_writefd(char *message,
         return -1;
       }
       buf_available = BUF_SIZE - buf_written;
-      printf("Written %d bytes, buffer available %d bytes.\n",
+      printf("(Socket %d): Written %d bytes, buffer available %d bytes.\n",
+             i,
              buf_written,
              buf_available);
     }

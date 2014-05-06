@@ -11,5 +11,5 @@
 #define DISPATCHER_H
 
 int handle_readfd(char **, int);
-int handle_writefd(char *, int, int, fd_set*);
+int handle_writefd(char *, int, int, int, fd_set*);
 #endif /* dispatcher.h */
